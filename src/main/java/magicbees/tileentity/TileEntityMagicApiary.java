@@ -50,6 +50,15 @@ import forestry.api.core.EnumTemperature;
 import forestry.api.core.ForestryAPI;
 import forestry.api.core.IErrorLogic;
 
+import thaumcraft.api.ThaumcraftApi;
+import thaumcraft.api.ThaumcraftApi.EntityTags;
+import thaumcraft.api.aspects.Aspect;
+import thaumcraft.api.aspects.AspectList;
+import thaumcraft.api.aspects.IAspectContainer;
+import thaumcraft.api.aspects.IEssentiaTransport;
+import thaumcraft.common.config.ConfigBlocks;
+import thaumcraft.common.entities.golems.EntityGolemBase;
+
 public class TileEntityMagicApiary extends TileEntity implements ISidedInventory, IBeeHousing, ITileEntityAuraCharged, IAspectContainer, IEssentiaTransport {
 
     // Constants
