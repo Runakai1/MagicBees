@@ -937,6 +937,8 @@ public class TileEntityMagicApiary extends TileEntity implements ISidedInventory
         private final TileEntityMagicApiary magicApiary;
 
         public MagicApiaryBeeListener(TileEntityMagicApiary magicApiary) {
+            // Added to test to see if this makes it occasionally output praecantatio essentia
+            this.magicApiary.addToContainer(MAGIC, 1);
             this.magicApiary = magicApiary;
         }
 
