@@ -25,6 +25,8 @@ import magicbees.item.ItemPollen;
 import magicbees.item.ItemPropolis;
 import magicbees.item.ItemThaumiumGrafter;
 import magicbees.item.ItemThaumiumScoop;
+import magicbees.item.ItemVoidGrafter;
+import magicbees.item.ItemVoidScoop;
 import magicbees.item.ItemWax;
 import magicbees.item.types.CapsuleType;
 import magicbees.item.types.HiveFrameType;
@@ -85,6 +87,7 @@ public class Config
 	public static boolean logHiveSpawns;
 	public static double thaumcraftSaplingDroprate;
 	public static int aromaticLumpSwarmerRate;
+	public static int thaumcraftNodeMaxSize;
 
 	public static boolean arsMagicaActive;
 	public static boolean bloodMagicActive;
@@ -123,6 +126,9 @@ public class Config
 	public static ItemNugget nuggets;
 	public static ItemMoonDial moonDial;
 	public static ItemMysteriousMagnet magnet;
+	
+	public static Item voidScoop;
+	public static Item voidGrafter;
 	
 	public static boolean disableMagnetSound;
 	
@@ -308,8 +314,11 @@ public class Config
 		p.comment = "Set to true to make Thaumium Grafter & Scoop require impregnated sticks in the recipe.";
 		useImpregnatedStickInTools = p.getBoolean(false);
 
-		p = configuration.get(CATEGORY_GENERAL, "thaumCraftSaplingDroprate", 0.1, "The chance for thaumcraft saplings using the thaumium grafter", 0.0, 1.0);
+		p = configuration.get(CATEGORY_GENERAL, "thaumcraftSaplingDroprate", 0.1, "The chance for thaumcraft saplings using the thaumium grafter", 0.0, 1.0);
 		thaumcraftSaplingDroprate = p.getDouble(0.1);
+		
+		p = configuration.get(CATEGORY_GENERAL, "thaumcraftNodeMaxSize", 256, "The maximum aspect amount Nexus bees can grow a node to", 64, 32767);
+		thaumcraftNodeMaxSize = p.getInt(256);
 
 		p = configuration.get(CATEGORY_GENERAL, "moonDialShowText", false);
 		p.comment = "set to true to show the current moon phase in mouse-over text.";
@@ -460,6 +469,17 @@ public class Config
 			
 			thaumiumGrafter = new ItemThaumiumGrafter();
 			GameRegistry.registerItem(thaumiumGrafter, thaumiumGrafter.getUnlocalizedName(), CommonProxy.DOMAIN);
+			
+			voidScoop = new ItemVoidScoop();
+			GameRegistry.registerItem(voidScoop, voidScoop.getUnlocalizedName(), CommonProxy.DOMAIN);
+			
+			voidGrafter = new ItemVoidGrafter();
+			GameRegistry.registerItem(voidGrafter, voidGrafter.getUnlocalizedName(), CommonProxy.DOMAIN);
+			
+			
+			
+			
+			
 		}
 	}
 	
@@ -488,7 +508,7 @@ public class Config
 
 	private void setupMiscForestryItemHooks() {
 		// Make Aromatic Lumps a swarmer inducer. Chance is /1000.
-		if (aromaticLumpSwarmerRate <= 0) {
+		if (aromaticLumpSwarmerRate > 0) {
 			aromaticLumpSwarmerRate = (aromaticLumpSwarmerRate >= 1000) ? 1000: aromaticLumpSwarmerRate;
 			BeeManager.inducers.put(miscResources.getStackForType(ResourceType.AROMATIC_LUMP), aromaticLumpSwarmerRate);
 		}
