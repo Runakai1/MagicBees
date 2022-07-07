@@ -58,6 +58,9 @@ import thaumcraft.api.aspects.IAspectContainer;
 import thaumcraft.api.aspects.IEssentiaTransport;
 import thaumcraft.common.config.ConfigBlocks;
 import thaumcraft.common.entities.golems.EntityGolemBase;
+import java.util.Iterator;
+import java.util.List;
+import net.minecraftforge.common.util.ForgeDirection;
 
 public class TileEntityMagicApiary extends TileEntity implements ISidedInventory, IBeeHousing, ITileEntityAuraCharged, IAspectContainer, IEssentiaTransport {
 
