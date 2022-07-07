@@ -50,7 +50,7 @@ import forestry.api.core.EnumTemperature;
 import forestry.api.core.ForestryAPI;
 import forestry.api.core.IErrorLogic;
 
-public class TileEntityMagicApiary extends TileEntity implements ISidedInventory, IBeeHousing, ITileEntityAuraCharged {
+public class TileEntityMagicApiary extends TileEntity implements ISidedInventory, IBeeHousing, ITileEntityAuraCharged, IAspectContainer, IEssentiaTransport {
 
     // Constants
     private static final int AURAPROVIDER_SEARCH_RADIUS = 6;
@@ -61,13 +61,221 @@ public class TileEntityMagicApiary extends TileEntity implements ISidedInventory
     private ChunkCoords auraProviderPosition;
     private BiomeGenBase biome;
     private int breedingProgressPercent = 0;
-
     private final IBeekeepingLogic beeLogic;
     private final IErrorLogic errorLogic;
     private final IBeeListener beeListener;
     private final IBeeModifier beeModifier;
     private final MagicApiaryInventory inventory;
     private final AuraCharges auraCharges = new AuraCharges();
+
+    // added directly from the crucible of souls
+    public AspectList myAspects = new AspectList();
+
+    // added directly from the crucible of souls
+    @Override
+    public void setAspects(AspectList aspects) {
+        this.myAspects = aspects;
+    }
+
+
+    // added directly from the crucible of souls
+    @Override
+    public AspectList getAspects() {
+        // TODO Auto-generated method stub
+        return this.myAspects;
+    }
+
+    // added directly from the crucible of souls
+    @Override
+    public boolean doesContainerAccept(Aspect tag) {
+        return false;
+    }
+
+    // added directly from the crucible of souls
+    @Override
+    public int addToContainer(Aspect tag, int amount) {
+        return amount;
+    }
+
+    // added directly from the crucible of souls
+    @Override
+    public boolean takeFromContainer(Aspect tag, int amount) {
+        if (!this.worldObj.isRemote) {
+            this.worldObj.markBlockForUpdate(this.xCoord, this.yCoord, this.zCoord);
+        }
+        if (this.myAspects.getAmount(tag) >= amount) {
+            this.myAspects.reduce(tag, amount);
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+    // added directly from the crucible of souls
+    @Override
+    public boolean takeFromContainer(AspectList ot) {
+        // TODO Auto-generated method stub
+        boolean hasIt = true;
+        if (!this.worldObj.isRemote) {
+            this.worldObj.markBlockForUpdate(this.xCoord, this.yCoord, this.zCoord);
+        }
+        ot.aspects.keySet().iterator();
+        Iterator iterator = ot.aspects.keySet().iterator();
+        while (iterator.hasNext()) {
+            Object next = iterator.next();
+            if (this.myAspects.getAmount((Aspect) next) < ot.getAmount((Aspect) next))
+                hasIt = false;
+        }
+        if (hasIt) {
+            iterator = ot.aspects.keySet().iterator();
+            while (iterator.hasNext()) {
+                Object next = iterator.next();
+                myAspects.reduce((Aspect) next, ot.getAmount((Aspect) next));
+            }
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+    // added directly from the crucible of souls
+    @Override
+    public boolean doesContainerContainAmount(Aspect tag, int amount) {
+        // TODO Auto-generated method stub
+        return (this.myAspects.getAmount(tag) > amount);
+    }
+
+    // added directly from the crucible of souls
+    @Override
+    public boolean doesContainerContain(AspectList ot) {
+        boolean hasIt = true;
+        ot.aspects.keySet().iterator();
+        Iterator iterator = ot.aspects.keySet().iterator();
+        while (iterator.hasNext()) {
+            Object next = iterator.next();
+            if (this.myAspects.getAmount((Aspect) next) < ot.getAmount((Aspect) next))
+                hasIt = false;
+        }
+        return hasIt;
+    }
+
+    // added directly from the crucible of souls
+    @Override
+    public int containerContains(Aspect tag) {
+        return this.myAspects.getAmount(tag);
+    }
+
+    // added directly from the crucible of souls
+    @Override
+    public boolean isConnectable(ForgeDirection face) {
+        return (face != ForgeDirection.UP);
+    }
+
+    // added directly from the crucible of souls
+    @Override
+    public boolean canInputFrom(ForgeDirection face) {
+        return false;
+    }
+
+    // added directly from the crucible of souls
+    @Override
+    public boolean canOutputTo(ForgeDirection face) {
+        return (face != ForgeDirection.UP);
+    }
+
+    // added directly from the crucible of souls
+    @Override
+    public void setSuction(Aspect aspect, int amount) {
+        // TODO Auto-generated method stub
+
+    }
+
+    // added directly from the crucible of souls
+    @Override
+    public int takeEssentia(Aspect aspect, int amount, ForgeDirection arg2) {
+        if (arg2 != ForgeDirection.UP) {
+            if (!this.worldObj.isRemote) {
+                this.worldObj.markBlockForUpdate(this.xCoord, this.yCoord, this.zCoord);
+            }
+            if (amount > this.myAspects.getAmount(aspect)) {
+                int total  = this.myAspects.getAmount(aspect);
+                this.myAspects.reduce(aspect, total);
+                return total;
+            }
+            else
+            {
+                this.myAspects.reduce(aspect, amount);
+                return amount;
+            }
+
+        }
+        else
+        {
+            return 0;
+        }
+
+    }
+
+    // added directly from the crucible of souls
+    @Override
+    public int getMinimumSuction() {
+        // TODO Auto-generated method stub
+        return 0;
+    }
+
+    // added directly from the crucible of souls
+    @Override
+    public boolean renderExtendedTube() {
+        // TODO Auto-generated method stub
+        return false;
+        //NEW AFTER THIS LINE
+    }
+
+    // added directly from the crucible of souls
+    @Override
+    public Aspect getSuctionType(ForgeDirection face) {
+        return null;
+    }
+
+    // added directly from the crucible of souls
+    @Override
+    public int getSuctionAmount(ForgeDirection face) {
+        return 0;
+    }
+
+    // added directly from the crucible of souls
+    @Override
+    public Aspect getEssentiaType(ForgeDirection face) {
+        return this.myAspects.size() > 0 ? this.myAspects.getAspects()[this.worldObj.rand.nextInt(this.myAspects.getAspects().length)] : null;
+    }
+
+    // added directly from the crucible of souls
+    @Override
+    public int getEssentiaAmount(ForgeDirection face) {
+        return this.myAspects.visSize();
+    }
+
+    // added directly from the crucible of souls
+    @Override
+    public int addEssentia(Aspect arg0, int arg1, ForgeDirection arg2) {
+        // TODO Auto-generated method stub
+        return 0;
+    }
+
+    // added directly from the crucible of souls
+    private float tagAmount() {
+        int amount = 0;
+        Iterator iterator = this.myAspects.aspects.keySet().iterator();
+        while (iterator.hasNext()) {
+            Object next = iterator.next();
+            amount += this.myAspects.getAmount((Aspect) next);
+        }
+        return amount;
+    }
 
     public TileEntityMagicApiary(){
         beeLogic = BeeManager.beeRoot.createBeekeepingLogic(this);
@@ -106,7 +314,7 @@ public class TileEntityMagicApiary extends TileEntity implements ISidedInventory
     }
 
     public void setOwner(EntityPlayer player) {
-    	this.ownerProfile = player.getGameProfile();
+        this.ownerProfile = player.getGameProfile();
     }
 
     @Override
@@ -257,6 +465,17 @@ public class TileEntityMagicApiary extends TileEntity implements ISidedInventory
         beeLogic.writeToNBT(compound);
         ChunkCoords.writeToNBT(auraProviderPosition, compound);
         auraCharges.writeToNBT(compound);
+
+        // soul crucible code below
+        NBTTagCompound aspects = new NBTTagCompound();
+        Iterator iterator =  Aspect.aspects.keySet().iterator();
+        while (iterator.hasNext()) {
+            Object next = iterator.next();
+            NBTTagCompound tag = new NBTTagCompound();
+            tag.setInteger("Amount", this.myAspects.getAmount(Aspect.getAspect((String) next)));
+            aspects.setTag((String) next, tag);
+        }
+        compound.setTag("Aspects", aspects);
     }
 
     @Override
@@ -267,12 +486,43 @@ public class TileEntityMagicApiary extends TileEntity implements ISidedInventory
         beeLogic.readFromNBT(compound);
         auraProviderPosition = ChunkCoords.readFromNBT(compound);
         auraCharges.readFromNBT(compound);
+
+        // soul crucible code below
+        AspectList readAspects = new AspectList();
+        NBTTagCompound aspects = compound.getCompoundTag("Aspects");
+        Iterator iterator =  Aspect.aspects.keySet().iterator();
+        while (iterator.hasNext()) {
+            Object next = iterator.next();
+            NBTTagCompound aspect = aspects.getCompoundTag((String) next);
+            int amount = aspect.getInteger("Amount");
+            if (amount > 0) {
+                readAspects.add(Aspect.getAspect((String) next), amount);
+            }
+        }
+        this.myAspects = readAspects;
     }
 
     @Override
     public Packet getDescriptionPacket() {
         beeLogic.syncToClient();
         EventAuraChargeUpdate event = new EventAuraChargeUpdate(new ChunkCoords(this), auraCharges);
+
+        // soul crucible code below
+
+        NBTTagCompound access = new NBTTagCompound();
+        NBTTagCompound aspects = new NBTTagCompound();
+
+        Iterator iterator =  Aspect.aspects.keySet().iterator();
+        while (iterator.hasNext()) {
+            Object next = iterator.next();
+            NBTTagCompound tag = new NBTTagCompound();
+            tag.setInteger("Amount", this.myAspects.getAmount(Aspect.getAspect((String) next)));
+            aspects.setTag((String) next, tag);
+        }
+        access.setTag("Aspects", aspects);
+
+        // this code right here could potentially be an issue though
+
         return event.getPacket();
     }
 
@@ -290,7 +540,7 @@ public class TileEntityMagicApiary extends TileEntity implements ISidedInventory
             updateClientSide();
         }
         else {
-        	updateServerSide();
+            updateServerSide();
         }
     }
 
@@ -301,13 +551,13 @@ public class TileEntityMagicApiary extends TileEntity implements ISidedInventory
     }
 
     public void updateServerSide() {
-   		if (this.auraProvider == null) {
-   			findAuraProvider();
-   		}
-   		else {
-   			updateAuraProvider();
-   		}
-   		tickCharges();
+        if (this.auraProvider == null) {
+            findAuraProvider();
+        }
+        else {
+            updateAuraProvider();
+        }
+        tickCharges();
 
         if (beeLogic.canWork()) {
             beeLogic.doWork();
@@ -325,42 +575,42 @@ public class TileEntityMagicApiary extends TileEntity implements ISidedInventory
     public void sendGUINetworkData(Container container, ICrafting iCrafting) {
         iCrafting.sendProgressBarUpdate(container, 0, beeLogic.getBeeProgressPercent());
     }
-    
+
     public boolean isProductionBoosted() {
         return auraCharges.isActive(AuraCharge.PRODUCTION);
     }
-    
+
     public boolean isDeathRateBoosted() {
         return auraCharges.isActive(AuraCharge.DEATH);
     }
-    
+
     public boolean isMutationBoosted() {
         return auraCharges.isActive(AuraCharge.MUTATION);
     }
-    
+
     private void updateAuraProvider() {
-    	if (worldObj.getTotalWorldTime() % 10 != 0) {
-    		return;
-    	}
-    	if (getAuraProvider(auraProviderPosition) == null) {
-    		this.auraProvider = null;
-    		this.auraProviderPosition = null;
-    		return;
-    	}
-    	
-    	boolean auraChargesChanged = false;
+        if (worldObj.getTotalWorldTime() % 10 != 0) {
+            return;
+        }
+        if (getAuraProvider(auraProviderPosition) == null) {
+            this.auraProvider = null;
+            this.auraProviderPosition = null;
+            return;
+        }
+
+        boolean auraChargesChanged = false;
         for (AuraCharge charge : AuraCharge.values()) {
             if (!auraCharges.isActive(charge) && auraProvider.getCharge(charge.type)) {
                 auraCharges.start(charge, worldObj);
                 auraChargesChanged = true;
             }
         }
-    	
-    	if (auraChargesChanged) {
+
+        if (auraChargesChanged) {
             NetworkEventHandler.getInstance().sendAuraChargeUpdate(this, auraCharges);
-    	}
+        }
     }
-    
+
     private void tickCharges() {
         boolean auraChargesChanged = false;
 
@@ -371,15 +621,15 @@ public class TileEntityMagicApiary extends TileEntity implements ISidedInventory
             }
         }
 
-    	if (auraChargesChanged) {
-    		NetworkEventHandler.getInstance().sendAuraChargeUpdate(this, auraCharges);
-    	}
+        if (auraChargesChanged) {
+            NetworkEventHandler.getInstance().sendAuraChargeUpdate(this, auraCharges);
+        }
     }
 
     private void findAuraProvider() {
-    	if (worldObj.getTotalWorldTime() % 5 != 0) {
-    		return;
-    	}
+        if (worldObj.getTotalWorldTime() % 5 != 0) {
+            return;
+        }
 
         if (this.auraProviderPosition == null) {
             List<Chunk> chunks = getChunksInSearchRange();
@@ -395,63 +645,63 @@ public class TileEntityMagicApiary extends TileEntity implements ISidedInventory
             }
         }
     }
-    
-	private List<Chunk> getChunksInSearchRange() {
-		List<Chunk> chunks = new ArrayList<Chunk>(4);
-		chunks.add(worldObj.getChunkFromBlockCoords(xCoord - AURAPROVIDER_SEARCH_RADIUS, zCoord - AURAPROVIDER_SEARCH_RADIUS));
-		Chunk chunk = worldObj.getChunkFromBlockCoords(xCoord + AURAPROVIDER_SEARCH_RADIUS, zCoord - AURAPROVIDER_SEARCH_RADIUS);
-		if (!chunks.contains(chunk)) {
-			chunks.add(chunk);
-		}
-		chunk = worldObj.getChunkFromBlockCoords(xCoord - AURAPROVIDER_SEARCH_RADIUS, zCoord + AURAPROVIDER_SEARCH_RADIUS);
-		if (!chunks.contains(chunk)) {
-			chunks.add(chunk);
-		}
-		chunk = worldObj.getChunkFromBlockCoords(xCoord + AURAPROVIDER_SEARCH_RADIUS, zCoord + AURAPROVIDER_SEARCH_RADIUS);
-		if (!chunks.contains(chunk)) {
-			chunks.add(chunk);
-		}
-		return chunks;
-	}
-	
-	@SuppressWarnings("unchecked")
-	private boolean searchChunkForBooster(Chunk chunk) {
-		Vec3 apiaryPos = Vec3.createVectorHelper(xCoord, yCoord, zCoord);
-		for (Map.Entry<ChunkPosition, TileEntity> entry : ((Map<ChunkPosition, TileEntity>)chunk.chunkTileEntityMap).entrySet()) {
-			TileEntity entity = entry.getValue();
-			if (entity instanceof IMagicApiaryAuraProvider) {
-				Vec3 tePos = Vec3.createVectorHelper(entity.xCoord, entity.yCoord, entity.zCoord);
-				Vec3 result = apiaryPos.subtract(tePos);
-				if (result.lengthVector() <= AURAPROVIDER_SEARCH_RADIUS) {
-					saveAuraProviderPosition(entity.xCoord, entity.yCoord, entity.zCoord);
-					this.auraProvider = (IMagicApiaryAuraProvider)entity;
-					return true;
-				}
-			}
-		}
-		return false;
-	}
-	
-	private void saveAuraProviderPosition(int x, int y, int z) {
-		auraProviderPosition = new ChunkCoords(worldObj.provider.dimensionId, x, y, z);
-	}
+
+    private List<Chunk> getChunksInSearchRange() {
+        List<Chunk> chunks = new ArrayList<Chunk>(4);
+        chunks.add(worldObj.getChunkFromBlockCoords(xCoord - AURAPROVIDER_SEARCH_RADIUS, zCoord - AURAPROVIDER_SEARCH_RADIUS));
+        Chunk chunk = worldObj.getChunkFromBlockCoords(xCoord + AURAPROVIDER_SEARCH_RADIUS, zCoord - AURAPROVIDER_SEARCH_RADIUS);
+        if (!chunks.contains(chunk)) {
+            chunks.add(chunk);
+        }
+        chunk = worldObj.getChunkFromBlockCoords(xCoord - AURAPROVIDER_SEARCH_RADIUS, zCoord + AURAPROVIDER_SEARCH_RADIUS);
+        if (!chunks.contains(chunk)) {
+            chunks.add(chunk);
+        }
+        chunk = worldObj.getChunkFromBlockCoords(xCoord + AURAPROVIDER_SEARCH_RADIUS, zCoord + AURAPROVIDER_SEARCH_RADIUS);
+        if (!chunks.contains(chunk)) {
+            chunks.add(chunk);
+        }
+        return chunks;
+    }
+
+    @SuppressWarnings("unchecked")
+    private boolean searchChunkForBooster(Chunk chunk) {
+        Vec3 apiaryPos = Vec3.createVectorHelper(xCoord, yCoord, zCoord);
+        for (Map.Entry<ChunkPosition, TileEntity> entry : ((Map<ChunkPosition, TileEntity>)chunk.chunkTileEntityMap).entrySet()) {
+            TileEntity entity = entry.getValue();
+            if (entity instanceof IMagicApiaryAuraProvider) {
+                Vec3 tePos = Vec3.createVectorHelper(entity.xCoord, entity.yCoord, entity.zCoord);
+                Vec3 result = apiaryPos.subtract(tePos);
+                if (result.lengthVector() <= AURAPROVIDER_SEARCH_RADIUS) {
+                    saveAuraProviderPosition(entity.xCoord, entity.yCoord, entity.zCoord);
+                    this.auraProvider = (IMagicApiaryAuraProvider)entity;
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    private void saveAuraProviderPosition(int x, int y, int z) {
+        auraProviderPosition = new ChunkCoords(worldObj.provider.dimensionId, x, y, z);
+    }
 
     private IMagicApiaryAuraProvider getAuraProvider(ChunkCoords coords) {
-		return getAuraProvider(coords.x, coords.y, coords.z);
-	}
-    
-	private IMagicApiaryAuraProvider getAuraProvider(int x, int y, int z) {
-		Chunk chunk = worldObj.getChunkFromBlockCoords(x, z);
-		x %= 16;
-		z %= 16;
-		if (x < 0) {
-			x += 16;
-		}
-		if (z < 0) {
-			z += 16;
-		}
-		ChunkPosition cPos = new ChunkPosition(x, y, z);
-		TileEntity entity = (TileEntity)chunk.chunkTileEntityMap.get(cPos);
+        return getAuraProvider(coords.x, coords.y, coords.z);
+    }
+
+    private IMagicApiaryAuraProvider getAuraProvider(int x, int y, int z) {
+        Chunk chunk = worldObj.getChunkFromBlockCoords(x, z);
+        x %= 16;
+        z %= 16;
+        if (x < 0) {
+            x += 16;
+        }
+        if (z < 0) {
+            z += 16;
+        }
+        ChunkPosition cPos = new ChunkPosition(x, y, z);
+        TileEntity entity = (TileEntity)chunk.chunkTileEntityMap.get(cPos);
         if (!(entity instanceof IMagicApiaryAuraProvider)) {
             return null;
         }
@@ -557,7 +807,7 @@ public class TileEntityMagicApiary extends TileEntity implements ISidedInventory
 
         public boolean canInsertItem(int slot, ItemStack itemStack, int side) {
             if(slot == SLOT_QUEEN && BeeManager.beeRoot.isMember(itemStack)
-                    && !BeeManager.beeRoot.isDrone(itemStack)) {
+                && !BeeManager.beeRoot.isDrone(itemStack)) {
                 return true;
             }
             else if (slot == SLOT_DRONE && BeeManager.beeRoot.isDrone(itemStack)) {
