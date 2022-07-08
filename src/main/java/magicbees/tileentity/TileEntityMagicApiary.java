@@ -6,6 +6,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+
 import magicbees.api.bees.IMagicApiaryAuraProvider;
 import magicbees.bees.AuraCharge;
 import magicbees.bees.BeeManager;
@@ -49,7 +50,6 @@ import forestry.api.core.EnumHumidity;
 import forestry.api.core.EnumTemperature;
 import forestry.api.core.ForestryAPI;
 import forestry.api.core.IErrorLogic;
-
 import thaumcraft.api.ThaumcraftApi;
 import thaumcraft.api.ThaumcraftApi.EntityTags;
 import thaumcraft.api.aspects.Aspect;
@@ -61,6 +61,8 @@ import thaumcraft.common.entities.golems.EntityGolemBase;
 import java.util.Iterator;
 import java.util.List;
 import net.minecraftforge.common.util.ForgeDirection;
+import thaumcraft.api.aspects.Aspect;
+//import magicbees.api.bees.BeeClassification;
 
 public class TileEntityMagicApiary extends TileEntity implements ISidedInventory, IBeeHousing, ITileEntityAuraCharged, IAspectContainer, IEssentiaTransport {
 
@@ -82,6 +84,20 @@ public class TileEntityMagicApiary extends TileEntity implements ISidedInventory
 
     // added directly from the crucible of souls
     public AspectList myAspects = new AspectList();
+    public Aspect aspect;
+    public int amount = 0;
+    public int maxAmount = 64;
+    public int incre = 0;
+
+    /* public static final Aspect AIR = new Aspect("aer", 16777086, "e", 1);
+    public static final Aspect EARTH = new Aspect("terra", 5685248, "2", 1);
+    public static final Aspect FIRE = new Aspect("ignis", 16734721, "c", 1);
+    public static final Aspect WATER = new Aspect("aqua", 3986684, "3", 1);
+    public static final Aspect ORDER = new Aspect("ordo", 14013676, "7", 1);
+    public static final Aspect ENTROPY = new Aspect("perditio", 4210752, "8", 771); */
+
+    // the commented lines above show how the essentias are labeled, you use the actual name of the essentia to grab it.
+    public Aspect AIR = aspect.getAspect("aer");
 
     // added directly from the crucible of souls
     @Override
@@ -105,8 +121,18 @@ public class TileEntityMagicApiary extends TileEntity implements ISidedInventory
 
     // added directly from the crucible of souls
     @Override
-    public int addToContainer(Aspect tag, int amount) {
-        return amount;
+    public int addToContainer(Aspect tag, int am) {
+        if (am == 0) {
+            return am;
+        } else {
+            if (this.amount < this.maxAmount && tag == this.aspect || this.amount == 0) {
+                this.aspect = tag;
+                int added = Math.min(am, this.maxAmount - this.amount);
+                this.amount += added;
+                am -= added;
+            }
+            return am;
+        }
     }
 
     // added directly from the crucible of souls
@@ -443,7 +469,6 @@ public class TileEntityMagicApiary extends TileEntity implements ISidedInventory
 
     @Override
     public void openInventory() {
-
     }
 
     @Override
@@ -548,6 +573,12 @@ public class TileEntityMagicApiary extends TileEntity implements ISidedInventory
 
     @Override
     public void updateEntity() {
+        // this allows it to add essentia
+        if (incre >= 20) {
+            this.myAspects.add(AIR, 1);
+            incre=0;
+        } incre++;
+        
         if (worldObj.isRemote) {
             updateClientSide();
         }
@@ -932,13 +963,13 @@ public class TileEntityMagicApiary extends TileEntity implements ISidedInventory
         }
     }
 
+
+
+    // I think this is the updater
     private static class MagicApiaryBeeListener extends DefaultBeeListener {
 
         private final TileEntityMagicApiary magicApiary;
-
         public MagicApiaryBeeListener(TileEntityMagicApiary magicApiary) {
-            // Added to test to see if this makes it occasionally output praecantatio essentia
-            this.magicApiary.addToContainer(MAGIC, 1);
             this.magicApiary = magicApiary;
         }
 
